@@ -1,4 +1,5 @@
 import ast
+import os
 import pprint
 import sys
 
@@ -83,7 +84,7 @@ class FunctionFinder(ast.NodeVisitor):
         super().__init__(*args, **kwargs)
 
     def visit_FunctionDef(self, node):
-        func_id = (self.filename, node.name, node.lineno, node.col_offset)
+        func_id = (self.filename, node.name, node.lineno)
         self.function_registry[func_id] = args = []
 
         # Add normal args:
@@ -97,7 +98,7 @@ class FunctionFinder(ast.NodeVisitor):
         if kwarg is not None:
             args += guess_kwargs(node.body, kwarg.arg)
 
-filename = sys.argv[1]
+filename = os.path.abspath(sys.argv[1])
 source = open(filename).read()
 tree = ast.parse(source, filename)
 
