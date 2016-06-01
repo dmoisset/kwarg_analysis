@@ -57,11 +57,12 @@ class Tracer():
         sys.settrace(self._trace)
         del self._trace
 
-with Tracer() as calls:
-    import samples.example as x
-    x.f_chain(x=3)
-    x.f_non_chain()
-    x.f_dynamic(x.C())
+if __name__ == "__main__":
+    with Tracer() as calls:
+        import samples.example as x
+        x.f_chain(x=3)
+        x.f_non_chain()
+        x.f_dynamic(x.C())
 
-import pprint
-pprint.pprint(calls)
+    import pprint
+    pprint.pprint(calls)
