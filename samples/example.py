@@ -71,7 +71,7 @@ def f_dynamic(obj, **kwargs):
     # This is statically unsolvable unless we know more about "obj"
     # (for example: obj is an instance of C)
     z = kwargs.pop('z', 2)
-    obj.f(**kwargs)
+    obj.method(**kwargs)
     return z
 
 
