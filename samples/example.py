@@ -47,12 +47,20 @@ def f_pop(**kwargs):
 def f_chain(**kwargs):
     # Use some argument, then chain to other kwargs function
     z = kwargs.pop('z', 2)
-    result = z + f1(**kwargs)
+    result = z + f_get(**kwargs)
+    return result
+
+
+def f_non_chain(**kwargs):
+    # Calls with ** which are not chains
+    z = kwargs.pop('z', 2)
+    other = dict(x=1, y=2)
+    result = z + f_get(**other)
     return result
 
 
 class C():
-    def f(self, **kwargs):
+    def method(self, **kwargs):
         # Use of kwargs within method
         self.x = kwargs.get('x', 0)
         self.y = kwargs.get('y', 1)
