@@ -1,4 +1,5 @@
 import ast
+import json
 import os
 import pprint
 import sys
@@ -76,6 +77,27 @@ def guess_kwargs(nodes, kwname):
     return list(result)
 
 
+def load_call_map(filename):
+    result = {}
+    with open(filename) as call_tree:
+        for call in json.load(call_tree):
+            caller = call["caller"]
+            callees = call["callee"]
+            result[tuple(caller)] = [tuple(callee) for callee in callees]
+    return result
+
+
+def resolve_chain_calls(reg, f):
+    args = reg[f]
+    if '<chain>' in args:
+        args.remove('<chain>')
+        chain_args = []
+        for c in call_map[f]:
+            resolve_chain_calls(reg, c)
+            chain_args += reg[c]
+        args += chain_args
+
+
 class FunctionFinder(ast.NodeVisitor):
 
     def __init__(self, *args, **kwargs):
@@ -98,12 +120,20 @@ class FunctionFinder(ast.NodeVisitor):
         if kwarg is not None:
             args += guess_kwargs(node.body, kwarg.arg)
 
-filename = os.path.abspath(sys.argv[1])
-source = open(filename).read()
-tree = ast.parse(source, filename)
+call_map = load_call_map("calls.json")
 
+# Analyze files in command line
 visitor = FunctionFinder()
-visitor.filename = filename
-visitor.visit(tree)
+for filename in sys.argv[1:]:
+    filename = os.path.abspath(filename)
+    source = open(filename).read()
+    tree = ast.parse(source, filename)
+
+    visitor.filename = filename
+    visitor.visit(tree)
+
+# Resolve chain calls
+for f in visitor.function_registry:
+    resolve_chain_calls(visitor.function_registry, f)
 
 pprint.pprint(visitor.function_registry)

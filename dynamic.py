@@ -64,5 +64,6 @@ if __name__ == "__main__":
         x.f_non_chain()
         x.f_dynamic(x.C())
 
-    import pprint
-    pprint.pprint(calls)
+        import json
+        with open("calls.json", "w") as f:
+            json.dump([dict(caller=k, callee=v) for k, v in calls.items()], f)
