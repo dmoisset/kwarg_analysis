@@ -88,14 +88,24 @@ def load_call_map(filename):
 
 
 def resolve_chain_calls(reg, f):
+    if f not in reg:
+        print("Warning: need info for unparsed function {1} at {0}:{2}. Perhaps add the file to the command?".format(*f))
+        return
     args = reg[f]
     if '<chain>' in args:
         args.remove('<chain>')
+        if f not in call_map:
+            print("Warning: no call info for function {1} at {0}:{2}".format(*f))
+            return
         chain_args = []
         for c in call_map[f]:
             resolve_chain_calls(reg, c)
-            chain_args += reg[c]
-        args += chain_args
+            # add info if we know c. otherwise the call above already has shown a warning
+            if c in reg:
+                chain_args += reg[c]
+        # Eliminate duplicate, mostly to avoid hogging RAM
+        newargs = set(chain_args) - set(args)
+        args += newargs
 
 
 class FunctionFinder(ast.NodeVisitor):
